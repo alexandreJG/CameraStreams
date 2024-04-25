@@ -9,6 +9,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.screenmanager import SlideTransition
 from kivy.uix.label import Label
 
 import subprocess
@@ -65,6 +66,7 @@ class StartScreen(Screen):
         self.add_widget(self.layout)
 
     def go_to_camera(self, instance):
+        self.manager.transition.direction = 'left'
         self.manager.current = 'camera'
         
 class CameraScreen(Screen):
@@ -74,7 +76,7 @@ class CameraScreen(Screen):
         self.layout = BoxLayout(orientation='vertical')
         self.camera_layout = GridLayout(cols=2)
 
-        self.home_button = Button(text='Home')
+        self.home_button = Button(text='Home', size_hint=(1, 0.5))
         self.home_button.bind(on_press=self.go_home)
         self.layout.add_widget(self.home_button)
         self.layout.add_widget(self.camera_layout)
@@ -145,6 +147,7 @@ class CameraScreen(Screen):
 
     def go_home(self, instance):
         #self.capture.release()
+        self.manager.transition.direction = 'right'  # Set the direction of the transition
         self.manager.current = 'start'
     
     def on_button_press(self, instance):
@@ -159,7 +162,7 @@ class CameraScreen(Screen):
 
 class CamApp(App):
     def build(self):
-        sm = ScreenManager()
+        sm = ScreenManager(transition=SlideTransition())
         sm.add_widget(StartScreen(name='start'))
         sm.add_widget(CameraScreen(name='camera'))
         return sm

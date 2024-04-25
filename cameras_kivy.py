@@ -8,6 +8,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
+from kivy.uix.checkbox import CheckBox
+from kivy.uix.label import Label
 
 import subprocess
 
@@ -64,36 +66,81 @@ class StartScreen(Screen):
 
     def go_to_camera(self, instance):
         self.manager.current = 'camera'
-
+        
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super(CameraScreen, self).__init__(**kwargs)
+
         self.layout = BoxLayout(orientation='vertical')
+        self.camera_layout = GridLayout(cols=2)
+
         self.home_button = Button(text='Home')
         self.home_button.bind(on_press=self.go_home)
         self.layout.add_widget(self.home_button)
+        self.layout.add_widget(self.camera_layout)
         self.start_button = Button(text='Start Camera')
         self.start_button.bind(on_press=self.start_camera)
         self.layout.add_widget(self.start_button)
+
+        # Add radio buttons for camera selection
+        self.radio_layout = BoxLayout(orientation='horizontal')
+        self.radio1 = CheckBox(group='camera', active=True)
+        self.radio1.bind(active=self.on_radio_active)
+        self.radio2 = CheckBox(group='camera')
+        self.radio2.bind(active=self.on_radio_active)
+        self.radio_all = CheckBox(group='camera')  
+        self.radio_all.bind(active=self.on_radio_active)
+        self.radio_layout.add_widget(Label(text='Camera 1'))
+        self.radio_layout.add_widget(self.radio1)
+        self.radio_layout.add_widget(Label(text='Camera 2'))
+        self.radio_layout.add_widget(self.radio2)
+        self.radio_layout.add_widget(Label(text='All'))
+        self.radio_layout.add_widget(self.radio_all)
+        self.layout.add_widget(self.radio_layout)
+
+        self.button = Button(text='Pause')
+        self.button.bind(on_press=self.on_button_press)
+        self.layout.add_widget(self.button)
+
         self.add_widget(self.layout)
         self.is_capturing = False 
 
+    def on_radio_active(self, instance, value):
+        if value:  # Only respond when a radio button is selected, not deselected
+            self.stop_camera()
+            self.start_camera(instance)
+
+    def stop_camera(self):
+        if self.is_capturing:
+            self.camera_layout.clear_widgets()
+            if hasattr(self, 'capture'):
+                self.capture.release()
+            if hasattr(self, 'capture1'):
+                self.capture1.release()
+            if hasattr(self, 'capture2'):
+                self.capture2.release()
+            self.is_capturing = False
+
     def start_camera(self, instance):
-        self.camera_layout = GridLayout(cols=2)  # This layout is for the cameras
         if not self.is_capturing:  
-            self.capture1 = cv2.VideoCapture(0)
-            self.my_camera1 = KivyCamera(capture=self.capture1, fps=30)
-            self.camera_layout.add_widget(self.my_camera1)  # Add the camera to the grid layout
-        
-            self.capture2 = cv2.VideoCapture(1)  # Create a VideoCapture object for the second camera
-            self.my_camera2 = KivyCamera(capture=self.capture2, fps=30)
-            self.camera_layout.add_widget(self.my_camera2)  # Add the second camera to the grid layout
-        
-            self.layout.add_widget(self.camera_layout)  # Add the grid layout to the main layout
-        
-            self.button = Button(text='Pause')
-            self.button.bind(on_press=self.on_button_press)
-            self.layout.add_widget(self.button)
+            if self.radio1.active:
+                self.capture = cv2.VideoCapture(0)
+                self.my_camera = KivyCamera(capture=self.capture, fps=30)
+                self.camera_layout.add_widget(self.my_camera)
+            elif self.radio2.active:
+                self.capture = cv2.VideoCapture(1)
+                self.my_camera = KivyCamera(capture=self.capture, fps=30)
+                self.camera_layout.add_widget(self.my_camera)
+            elif self.radio_all.active:  # Start captures for both cameras
+                self.capture1 = cv2.VideoCapture(0)
+                self.my_camera1 = KivyCamera(capture=self.capture1, fps=30)
+                self.camera_layout.add_widget(self.my_camera1)
+                self.capture2 = cv2.VideoCapture(1)
+                self.my_camera2 = KivyCamera(capture=self.capture2, fps=30)
+                self.camera_layout.add_widget(self.my_camera2)
+            else:
+                return
+            
             self.is_capturing = True  
 
     def go_home(self, instance):
@@ -101,14 +148,12 @@ class CameraScreen(Screen):
         self.manager.current = 'start'
     
     def on_button_press(self, instance):
-    # Pause or resume the capture depending on the current state
-        if self.my_camera1.paused and self.my_camera2.paused:
-            self.my_camera1.paused = False
-            self.my_camera2.paused = False
+        # Pause or resume the capture depending on the current state
+        if self.my_camera.paused:
+            self.my_camera.paused = False
             self.button.text = 'Pause'
         else:
-            self.my_camera1.paused = True
-            self.my_camera2.paused = True
+            self.my_camera.paused = True
             self.button.text = 'Resume'
 
 

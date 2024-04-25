@@ -4,6 +4,7 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
@@ -68,13 +69,15 @@ class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super(CameraScreen, self).__init__(**kwargs)
         self.layout = BoxLayout(orientation='vertical')
+        self.camera_layout = GridLayout(cols=2)  # This layout is for the cameras
         self.home_button = Button(text='Home')
         self.home_button.bind(on_press=self.go_home)
-        self.add_widget(self.layout)
         self.layout.add_widget(self.home_button)
         self.start_button = Button(text='Start Camera')
         self.start_button.bind(on_press=self.start_camera)
         self.layout.add_widget(self.start_button)
+        #self.layout.add_widget(self.camera_layout)  # Add the camera layout to the main layout
+        self.add_widget(self.layout)
         self.is_capturing = False 
 
     def start_camera(self, instance):

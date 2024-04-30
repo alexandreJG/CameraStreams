@@ -59,8 +59,8 @@ class StartScreen(Screen):
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
         self.layout = BoxLayout(orientation='vertical')
-        self.layout.add_widget(Label(text='Welcome!'))
-        self.start_button = Button(text='Start')
+        self.layout.add_widget(Label(text='Welcome!\n This is the OpenSource Software for multistreaming of video captures. To start, press the button below.\n'))
+        self.start_button = Button(text='Start Application')
         self.start_button.bind(on_press=self.go_to_camera)
         self.layout.add_widget(self.start_button)
         self.add_widget(self.layout)
@@ -101,7 +101,7 @@ class CameraScreen(Screen):
         self.layout.add_widget(self.radio_layout)
 
         self.button = Button(text='Pause')
-        self.button.bind(on_press=self.on_button_press)
+        self.button.bind(on_press=self.on_pause_press)
         self.layout.add_widget(self.button)
 
         self.add_widget(self.layout)
@@ -110,7 +110,7 @@ class CameraScreen(Screen):
     def on_radio_active(self, instance, value):
         if value:  # Only respond when a radio button is selected, not deselected
             self.stop_camera()
-            self.start_camera(instance)
+            # self.start_camera(instance)
 
     def stop_camera(self):
         if self.is_capturing:
@@ -150,7 +150,7 @@ class CameraScreen(Screen):
         self.manager.transition.direction = 'right'  # Set the direction of the transition
         self.manager.current = 'start'
     
-    def on_button_press(self, instance):
+    def on_pause_press(self, instance):
         # Pause or resume the capture depending on the current state
         if self.my_camera.paused:
             self.my_camera.paused = False
